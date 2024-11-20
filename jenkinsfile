@@ -1,7 +1,4 @@
 node {
-   environment {
-      GIT_SSL_NO_VERIFY = 'true'
-   }
    def gitcommit
    stage('Verificación SCM') {
      checkout scm
