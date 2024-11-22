@@ -1,20 +1,24 @@
 node {
-   def gitcommit
-   stage('Verificación SCM') {
-     checkout scm
-     bat "git rev-parse --short HEAD > .git/commit-id"                        
-     gitcommit = readFile('.git/commit-id').trim()
-   }
-   stage('test') {
-     nodejs(nodeJSInstallationName: 'nodejs') {
-       bat 'npm install --only=dev'
-       bat 'npm test'
-     }
-   }
-   stage('Docker Build & Push') {
-     docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
-      def nuestraapp = docker.build("manfredbabel/nodejsapp:${gitcommit}", ".")
-      nuestraapp.pu()
-     }
-   }
+    def gitcommit
+    stage('Verificación SCM') {
+        checkout scm
+        powershell """
+            git rev-parse --short HEAD > .git\\commit-id
+        """
+        gitcommit = readFile('.git/commit-id').trim()
+    }
+    stage('Test') {
+        nodejs(nodeJSInstallationName: 'nodejs') {
+            powershell """
+                npm install --only=dev
+                npm test
+            """
+        }
+    }
+    stage('Docker Build & Push') {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
+            def nuestraapp = docker.build("manfredbabel/nodejsapp:${gitcommit}", ".")
+            nuestraapp.push()
+        }
+    }
 }
